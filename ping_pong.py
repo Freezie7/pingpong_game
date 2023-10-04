@@ -20,7 +20,7 @@ class Player(GameSprite):
 
         if keys_pressed[K_w] and self.rect.y > -35:
             self.rect.y -= self.speed
-        if keys_pressed[K_s] and self.rect.y < 490:
+        if keys_pressed[K_s] and self.rect.y < 300:
             self.rect.y += self.speed
 
     def update_r(self):
@@ -28,7 +28,7 @@ class Player(GameSprite):
 
         if keys_pressed[K_UP] and self.rect.y > -35:
             self.rect.y -= self.speed
-        if keys_pressed[K_DOWN] and self.rect.y < 490:
+        if keys_pressed[K_DOWN] and self.rect.y < 300:
             self.rect.y += self.speed
 
 class Ball(GameSprite):
@@ -36,7 +36,7 @@ class Ball(GameSprite):
         if self.rect.y < 0:
             self.speed_y = self.speed_y * -1
 
-        if self.rect.y > 650:
+        if self.rect.y > 450:
             self.speed_y = self.speed_y * -1
 
         self.rect.x -= self.speed
@@ -62,7 +62,7 @@ player = Ball("tennis.png", 250, 200, 70, 70, 10, 0)
 racket1 = Player("rectangle.png", 0, 150, 30, 250, 10, 0)
 racket2 = Player("rectangle.png", 670, 150, 30, 250, 10, 0)
 #создай окно игры
-window_size = [700, 700]
+window_size = [700, 500]
 window = display.set_mode(window_size)
 display.set_caption("Пинг Понг")
 #задай фон сцены
@@ -71,10 +71,19 @@ background = transform.scale(image.load("fon.jpg"), window_size)
 #фоновая музыка
 
 #обработай событие «клик по кнопке "Закрыть окно"»
+def correct_dir(racket_check):
+    player.speeds()
+    if player.rect.y >= racket_check.rect.y and player.rect.y <= racket_check.rect.y + 45:
+        player.one()
+    elif player.rect.y >= racket_check.rect.y + 125 and player.rect.y <= racket_check.rect.y + 250:
+        player.two()
+    elif player.rect.y >= racket_check.rect.y + 75 and player.rect.y <= racket_check.rect.y + 110:
+        player.three()
 
 clock = time.Clock()
 FPS = 60
 game = True
+notGame = True
 
 font.init()
 fontmy = font.SysFont("Arial", 70)
@@ -86,32 +95,34 @@ while game:
     for e in event.get():
         if e.type == QUIT:
             game = False
+            
 
-    racket1.update_l()
-    racket2.update_r()
-    player.update()
+    if sprite.collide_rect(player, racket1):
+        correct_dir(racket1)
 
-    if sprite.collide_rect(player, racket1) or sprite.collide_rect(player, racket2) :
-        player.speeds()
-        if player.rect.y >= racket1.rect.y and player.rect.y <= racket1.rect.y + 45:
-            player.one()
-        elif player.rect.y >= racket1.rect.y + 151 and player.rect.y <= racket1.rect.y + 250:
-            player.two()
-        elif player.rect.y >= racket1.rect.y + 125 and player.rect.y <= racket1.rect.y + 150:
-            player.three()
-
-
-
-    window.blit(background, (0,0))
-    if player.rect.x >= 700:
-        window.blit(player1, (130,300))
-
-    if player.rect.x <= 0:
-        window.blit(player2, (130,300))
-
-    player.reset()
-    racket1.reset()
-    racket2.reset()
+    if sprite.collide_rect(player, racket2):
+        correct_dir(racket2)
     
+    if notGame:
+        racket1.update_l()
+        racket2.update_r()
+        player.update()
+
+        window.blit(background, (0,0))
+        player.reset()
+        racket1.reset()
+        racket2.reset()
+
+
+
+    if player.rect.x >= 700:
+        window.blit(player1, (130,150))
+        notGamse = False
+
+    if player.rect.x <= -40:
+        window.blit(player2, (130,150))
+        notGame = False
+
+
     display.update()
     clock.tick(FPS)
